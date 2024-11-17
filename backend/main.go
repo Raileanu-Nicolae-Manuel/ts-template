@@ -12,4 +12,5 @@ func main() {
 	// Initialize database connection
 	database := db.ConnectDB(cfg)
 	defer database.Close()
+	// queries := db.New(database)
 }

@@ -1,51 +1,29 @@
 include .env
 
 DB_URL="mysql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?parseTime=true&multiStatements=true"
-MIGRATION_FOLDR="file://$(MIGRATIONS_PATH)?format=golang-migrate"
+MIGRATION_FOLDR="file://$(MIGRATIONS_PATH)"
 
-.PHONY: all
-all: atlas-diff 
+.PHONY: sqlc
+sqlc:
+	sqlc generate
 
-.PHONY: combine-schemas
-combine-schemas:
-	@echo "Combining schemas..."
-	@cat $(SCHEMA_FOLDER)/*.sql > $(SCHEMA_PATH)
-# Atlas migration commands
+.PHONY: migrate-create
+migrate-create:
+	@if [ -z "$(filter-out $@,$(MAKECMDGOALS))" ]; then \
+		echo "Usage: make migrate-create <migration-name>"; \
+		exit 1; \
+	fi
+	migrate create -ext sql -dir $(MIGRATIONS_PATH) -seq $(filter-out $@,$(MAKECMDGOALS))
 
-.PHONY: atlas-diff 
-atlas-diff: create-db combine-schemas
-	@read -p "Enter migration name: " name; \
-	atlas migrate diff $${name} \
-	--dir $(MIGRATION_FOLDR) \
-	--to "file://$(SCHEMA_PATH)" \
-	--dev-url $(DB_URL)
+.PHONY: migrate-up
+migrate-up:
+	migrate -database $(DB_URL) -path $(MIGRATIONS_PATH) up
 
-.PHONY: create-db
-create-db:
-	@echo "Checking if database $(DB_NAME) exists..."; \
-	if ! mysql -u $(DB_USER) -p$(DB_PASSWORD) -h $(DB_HOST) -P $(DB_PORT) -e "SHOW DATABASES LIKE '$(DB_NAME)';" | grep -q $(DB_NAME); then \
-		make atlas-hash; \
-		echo "Database $(DB_NAME) not found. Creating..."; \
-		mysql -u $(DB_USER) -p$(DB_PASSWORD) -h $(DB_HOST) -P $(DB_PORT) -e "CREATE DATABASE $(DB_NAME);"; \
-	fi;
+.PHONY: migrate-down
+migrate-down:
+	migrate -database $(DB_URL) -path $(MIGRATIONS_PATH) down
 
-.PHONY: atlas-hash
-atlas-hash:
-	atlas migrate hash --dir $(MIGRATION_FOLDR)
-
-.PHONY: atlas-apply
-atlas-apply:
-	atlas migrate apply \
-	--dir $(MIGRATION_FOLDR) \
-	--url $(DB_URL) \
-	--allow-dirty
-
-# status
-.PHONY: atlas-status
-atlas-status:
-	atlas migrate status \
-	--dir $(MIGRATION_FOLDR) \
-	--url $(DB_URL)
-
-
+.PHONY: migrate-version
+migrate-version:
+	migrate -database $(DB_URL) -path $(MIGRATIONS_PATH) version
 
