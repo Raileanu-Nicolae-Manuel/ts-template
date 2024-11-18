@@ -22,9 +22,13 @@ func main() {
 
 	api.CreateRouter(queries).RegisterRoutes(router)
 
+	stack := api.Chain(
+		api.Logger,
+	)
+
 	server := &http.Server{
 		Addr:    cfg.ServerAddress,
-		Handler: router,
+		Handler: stack(router),
 	}
 	fmt.Println("Server is running on", cfg.ServerAddress)
 	server.ListenAndServe()

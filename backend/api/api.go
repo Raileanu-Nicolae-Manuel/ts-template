@@ -17,7 +17,7 @@ func CreateRouter(queries *database_util.Queries) *Router {
 
 func (r *Router) RegisterRoutes(router *http.ServeMux) {
 	r.users.RegisterRoutes(router, "/users")
-	Get(router, "/ping", Ping)
+	Get(router, "/ping", Ping, nil)
 }
 
 func Ping(w http.ResponseWriter, r *http.Request) {

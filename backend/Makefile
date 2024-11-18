@@ -3,6 +3,11 @@ include .env
 DB_URL="mysql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?parseTime=true&multiStatements=true"
 MIGRATION_FOLDR="file://$(MIGRATIONS_PATH)"
 
+# run need to have the last verion of sqlc generated the migrations will run automatically at start
+.PHONY: run
+run: sqlc
+	go run main.go
+
 .PHONY: sqlc
 sqlc:
 	sqlc generate
