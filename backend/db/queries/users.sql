@@ -1,25 +1,22 @@
 -- name: GetUser :one
 SELECT * FROM users
-WHERE id = $1;
+WHERE id = ?;
 
 -- name: ListUsers :many
 SELECT * FROM users
 ORDER BY id;
 
-
--- name: CreateUser :one
+-- name: CreateUser :execresult
 INSERT INTO users (username, email)
-VALUES ($1, $2)
-RETURNING *;
+VALUES (?, ?);
 
--- name: UpdateUser :one
+-- name: UpdateUser :exec
 UPDATE users
-SET username = $2,
-    email = $3,
+SET username = ?,
+    email = ?,
     updated_at = NOW()
-WHERE id = $1
-RETURNING *;
+WHERE id = ?;
 
 -- name: DeleteUser :exec
 DELETE FROM users
-WHERE id = $1; 
+WHERE id = ?; 
