@@ -24,6 +24,8 @@ func main() {
 
 	stack := api.Chain(
 		api.Logger,
+		api.CORS,
+		api.Hijack,
 	)
 
 	server := &http.Server{

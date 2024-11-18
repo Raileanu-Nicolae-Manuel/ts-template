@@ -17,6 +17,7 @@ type Config struct {
 	MigrationsPath string
 	SchemaPath     string
 	ServerAddress  string
+	Env            string
 }
 
 func LoadConfig() *Config {
@@ -39,5 +40,6 @@ func LoadConfig() *Config {
 		MigrationsPath: os.Getenv("MIGRATIONS_PATH"),
 		SchemaPath:     os.Getenv("SCHEMA_PATH"),
 		ServerAddress:  os.Getenv("SERVER_ADDRESS"),
+		Env:            os.Getenv("ENV"),
 	}
 }
