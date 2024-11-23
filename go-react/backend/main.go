@@ -1,37 +1,56 @@
 package main
 
 import (
-	"backend/api"
 	"backend/config"
-	"backend/db"
-	database_util "backend/db/sqlc"
+	"backend/proto/calculator"
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/improbable-eng/grpc-web/go/grpcweb"
+	"google.golang.org/grpc"
 )
 
+type Server struct {
+	calculator.CalculatorServiceServer
+}
+
+func (server *Server) Sum(ctx context.Context, req *calculator.SumRequest) (*calculator.SumResponse, error) {
+	return &calculator.SumResponse{Result: req.FirstNumber + req.SecondNumber}, nil
+}
+
 func main() {
-	// Load configuration
 	cfg := config.LoadConfig()
 
-	// Initialize database connection
-	database := db.ConnectDB(cfg)
-	defer database.Close()
-	queries := database_util.New(database)
+	grpcServer := grpc.NewServer()
+	calculator.RegisterCalculatorServiceServer(grpcServer, &Server{})
 
-	router := http.NewServeMux()
-
-	api.CreateRouter(queries).RegisterRoutes(router)
-
-	stack := api.Chain(
-		api.Logger,
-		api.CORS,
-		api.Hijack,
+	wrappedGrpc := grpcweb.WrapServer(grpcServer,
+		grpcweb.WithOriginFunc(func(origin string) bool {
+			return true // Be careful with this in production
+		}),
+		grpcweb.WithAllowedRequestHeaders([]string{"*"}),
 	)
 
-	server := &http.Server{
-		Addr:    cfg.ServerAddress,
-		Handler: stack(router),
+	handler := http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
+		resp.Header().Set("Access-Control-Allow-Origin", "*")
+		resp.Header().Set("Access-Control-Allow-Headers", "*")
+
+		if wrappedGrpc.IsGrpcWebRequest(req) {
+			wrappedGrpc.ServeHTTP(resp, req)
+			return
+		}
+		// Handle regular HTTP requests if needed
+	})
+
+	httpServer := &http.Server{
+		Addr:    ":8080",
+		Handler: handler,
+	}
+	err := httpServer.ListenAndServe()
+	if err != nil {
+		log.Fatalf("Failed to serve HTTP: %v", err)
 	}
 	fmt.Println("Server is running on", cfg.ServerAddress)
-	server.ListenAndServe()
 }

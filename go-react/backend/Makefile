@@ -32,3 +32,6 @@ migrate-down:
 migrate-version:
 	migrate -database $(DB_URL) -path $(MIGRATIONS_PATH) version
 
+.PHONY: proto
+proto:
+	protoc --proto_path=../proto ../proto/*.proto --go_out=. --go-grpc_out=.

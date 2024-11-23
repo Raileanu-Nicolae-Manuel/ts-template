@@ -1,0 +1,15 @@
+{
+  "name": "go-react",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "proto:generate": "npx protoc --ts_out ./frontend/src/service/api/generate --proto_path ./proto ./proto/*.proto"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.2",
+    "ts-proto": "^2.3.0"
+  },
+  "dependencies": {
+    "@protobuf-ts/plugin": "^2.9.4"
+  }
+}
