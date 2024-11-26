@@ -3,6 +3,10 @@ include .env
 DB_URL="mysql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?parseTime=true&multiStatements=true"
 MIGRATION_FOLDR="file://$(MIGRATIONS_PATH)"
 
+.PHONY: run-dev
+run-dev:
+	air
+
 # run need to have the last verion of sqlc generated the migrations will run automatically at start
 .PHONY: run
 run: sqlc

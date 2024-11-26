@@ -11,17 +11,18 @@ import (
 )
 
 const createUser = `-- name: CreateUser :execresult
-INSERT INTO users (username, email)
-VALUES (?, ?)
+INSERT INTO users (username, email, password)
+VALUES (?, ?, ?)
 `
 
 type CreateUserParams struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, createUser, arg.Username, arg.Email)
+	return q.db.ExecContext(ctx, createUser, arg.Username, arg.Email, arg.Password)
 }
 
 const deleteUser = `-- name: DeleteUser :exec

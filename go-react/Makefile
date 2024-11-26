@@ -10,4 +10,9 @@ proto-ts:
 	npm run proto:generate
 
 .PHONY: proto
-proto: proto-go proto-ts
+proto: clean proto-go proto-ts
+
+.PHONY: clean
+clean:
+	rm -rf backend/proto/*
+	rm -rf frontend/src/service/api/generate/*

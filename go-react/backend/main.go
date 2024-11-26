@@ -2,29 +2,26 @@ package main
 
 import (
 	"backend/config"
-	"backend/proto/calculator"
-	"context"
+	"backend/db"
 	"fmt"
 	"log"
 	"net/http"
+
+	"backend/api"
+	database_util "backend/db/sqlc"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
 )
 
-type Server struct {
-	calculator.CalculatorServiceServer
-}
-
-func (server *Server) Sum(ctx context.Context, req *calculator.SumRequest) (*calculator.SumResponse, error) {
-	return &calculator.SumResponse{Result: req.FirstNumber + req.SecondNumber}, nil
-}
-
 func main() {
 	cfg := config.LoadConfig()
+	database := db.ConnectDB(cfg)
+	defer database.Close()
+	queries := database_util.New(database)
 
 	grpcServer := grpc.NewServer()
-	calculator.RegisterCalculatorServiceServer(grpcServer, &Server{})
+	api.RegisterService(grpcServer, queries)
 
 	wrappedGrpc := grpcweb.WrapServer(grpcServer,
 		grpcweb.WithOriginFunc(func(origin string) bool {
@@ -45,12 +42,12 @@ func main() {
 	})
 
 	httpServer := &http.Server{
-		Addr:    ":8080",
+		Addr:    cfg.ServerAddress,
 		Handler: handler,
 	}
+	fmt.Println("Server is running on", cfg.ServerAddress)
 	err := httpServer.ListenAndServe()
 	if err != nil {
 		log.Fatalf("Failed to serve HTTP: %v", err)
 	}
-	fmt.Println("Server is running on", cfg.ServerAddress)
 }

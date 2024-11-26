@@ -7,8 +7,8 @@ SELECT * FROM users
 ORDER BY id;
 
 -- name: CreateUser :execresult
-INSERT INTO users (username, email)
-VALUES (?, ?);
+INSERT INTO users (username, email, password)
+VALUES (?, ?, ?);
 
 -- name: UpdateUser :exec
 UPDATE users
