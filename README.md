@@ -1,1 +1,1 @@
-# Astro with SolidJS
+# Astro with SolidJS for UI
