@@ -1,11 +1,17 @@
 ---
+
+import CardDemo from '@/components/solid/card';
+import { Button } from '@/components/ui/button';
 import Layout from '@layouts/root.astro';
-import Button from '@primitives/button.astro';
+//TODO: page for testing form moment
 ---
 
 <Layout>
-	<Button>
-		Click me
-	</Button>
+  <div class="flex flex-col items-center justify-center h-full gap-4">
+    <Button>
+      Click me
+    </Button>
+    <CardDemo client:load />
+  </div>
 </Layout>
 
